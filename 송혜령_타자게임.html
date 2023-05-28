@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #wrapper {
+            width: 750px;
+            height: 550px;
+            background: yellow;
+            margin: auto;
+        }
+
+        #side {
+            width: 150px;
+            height: 550px;
+            background: pink;
+            float: left;
+            text-align: center;
+        }
+
+        #content {
+            width: 600px;
+            height: 550px;
+            float: left;
+            position: relative;
+            /*자식때문에...*/
+        }
+
+        #score {
+            font-size: 40px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #side input {
+            width: 90%;
+            height: 45px;
+            margin-top: 10px;
+        }
+
+        #side button {
+            width: 94%;
+            height: 25px;
+            margin-top: 10px;
+        }
+
+        #hp {
+            background: greenyellow;
+            width: 140px;
+            height: 150px;
+            margin: auto;
+            margin-top: 10px;
+            position: relative;
+            /*자식때문에...*/
+        }
+    </style>
+    <script>
+
+        //게임에 사용할 단어 
+        let wordArray = [
+            ["광화문", "바구니", "태양", "저수지", "팝송", "저녁", "송사리", "서울대", "3호선", "마우스"],
+            ["자바", "개구리", "구름", "파인애플", "볼펜", "철학", "스피커", "과학", "메모장", "파란색"],
+            ["숙제내서죄송해요", "동굴", "자동차", "기쁨", "음악", "시계", "무지개", "파도", "지도", "가자미"]
+        ];
+        let game_score = 0;
+        let hp;
+        let hpArray = [];
+        let spanArray = [];
+        let velY = 5;
+        let content;
+        let span;
+        let size = 35;
+        let flag = false;
+        let keyword;
+        let h = -1;
+        let stage = 0;
+        let bgArray = ["salmon", "red", "blue"];
+
+
+        //최소값부터~최대값까지 의 랜덤을 구하는 함수
+        //2와 5사이의 랜덤값을 원하면
+        //호출시 getRandomByRange(2, 5)
+        function getRandomByRange(min, max) {
+            let result = min + parseInt((max - min + 1) * Math.random());
+            return result;
+        }
+
+        function init() {
+            content = document.getElementById("content");
+            hp = document.getElementById("hp");
+            score = document.getElementById("score");
+            keyword = document.querySelector("input");
+
+        }
+        function setScore() {
+            score.innerText = game_score + "점";
+        }
+        function createHp() {
+
+            for (let j = 0; j < 4; j++) {
+                for (let i = 0; i < 3; i++) {
+                    let box = document.createElement("div");
+                    box.style.width = size + "px";
+                    box.style.height = size + "px";
+                    box.style.background = "red";
+                    box.style.border = "2px solid black";
+                    box.style.position = "absolute";
+                    box.style.left = 15 + i * size + "px";
+                    box.style.top = 4 + j * size + "px";
+                    hp.appendChild(box);
+                    hpArray.push(box);
+                }
+            }
+           
+
+        }
+        function createWord() {
+            for (let i = 0; i < wordArray[stage].length; i++) {
+                let span = document.createElement("span");
+                span.style.position = "absolute";
+                span.innerText = wordArray[stage][i];
+                span.style.left = i * 50 + "px";
+                span.style.top = getRandomByRange(-50, -200) + "px";
+                content.appendChild(span);
+                spanArray.push(span);
+
+            }
+
+
+        }
+        function confirmKeyword() {
+            for (let i = 0; i < spanArray.length; i++) {
+                if (spanArray[i].innerText == keyword.value) {
+                    content.removeChild(spanArray[i]);
+                    spanArray.splice(i, 1);
+                    game_score += 10;
+                    setScore();
+                }
+            }
+            keyword.value = "";
+
+        }
+        function setFlag() {
+            flag = !flag;
+
+            keyword.focus();
+        }
+        function move() {
+            if (flag) {
+                for (let i = 0; i < spanArray.length; i++) {
+                    spanArray[i].style.top = parseInt(spanArray[i].style.top) + velY + "px";
+                    if (parseInt(spanArray[i].style.top) >= 525) {
+                        content.removeChild(spanArray[i]);
+                        spanArray.splice(i, 1);
+                        h++;
+                        hpArray[h].style.background = "gray";
+                        if(stage < 2){
+                            setTimeout(function(){
+                                clearStage();
+                            },500)
+                        }
+                        
+                        
+
+                    }
+                }
+            }
+        }
+        function bgChange() {
+            content.style.background = bgArray[stage];
+        }
+        function clearStage() {
+            console.log(stage.length)
+            if (spanArray == "") {
+                
+                alert("스테이지" + stage + "종료 다음 스테이지 이동")
+                
+                stage +=1;
+                h =-1;
+                bgChange();
+                createWord();
+                
+                console.log(stage);
+                //
+                // createWord();
+                // spanArray.push(wordArray[stage]);
+
+                for (let i = 0; i < hpArray.length; i++) {
+                    hpArray[i].style.background = "red";
+                }
+            } 
+            // if(stage == 1){
+            //     bgChange();
+            //     createWord();
+            //     alert('스테이지 2 시작')
+            //     stage +=1;
+            //     console.log(stage)
+                
+            // } 
+            
+        }
+        addEventListener("load", function () {
+            init();
+            setScore();
+            createHp();
+            createWord();
+            clearStage();
+            bgChange();
+            keyword.addEventListener("keyup", function (e) {
+                if (e.keyCode == 13) {
+                    confirmKeyword();
+                }
+
+
+            });
+
+
+            setInterval("move()", 50);
+        });
+    </script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="side">
+            <div id="score"></div>
+            <div id="hp"></div>
+            <input type="text">
+            <button onClick="setFlag()">Start</button>
+        </div>
+        <div id="content"></div>
+    </div>
+
+</body>
+
+</html>
